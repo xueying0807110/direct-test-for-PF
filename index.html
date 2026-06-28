@@ -446,10 +446,15 @@
         return;
       }
 
-      window.parent.postMessage({
+      const completionMessage = {
         type: 'netlify_complete',
         page: window.location.pathname
-      }, '*');
+      };
+
+      window.parent.postMessage(completionMessage, '*');
+      if (window.top && window.top !== window.parent) {
+        window.top.postMessage(completionMessage, '*');
+      }
     });
     preloadImages();
     buildProductOptions();
@@ -463,6 +468,7 @@
   </script>
 </body>
 </html>
+
 
 
 
