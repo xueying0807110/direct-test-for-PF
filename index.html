@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Display Page</title>
+  <style>
+    :root {
+      --text: #111;
+      --muted: #666;
+      --border: #d8d8d8;
+      --background: #ffffff;
+      --soft: #f6f6f6;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    .topbar {
+      height: 64px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 16px 56px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .image-panel {
+      background: var(--soft);
+      min-height: 520px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #eeeeee;
+      overflow: hidden;
+    }
+
+    .product-image {
+      max-width: 88%;
+      max-height: 480px;
+      object-fit: contain;
+      display: block;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 120ms ease;
+    }
+
+    .product-image.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .details {
+      padding-top: 4px;
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .brand {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 24px;
+      line-height: 1.28;
+      margin: 0 0 10px;
+      font-weight: 500;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--muted);
+      margin-bottom: 32px;
+      line-height: 1.5;
+      display: flex;
+      align-items: baseline;
+      gap: 36px;
+    }
+
+    .subtitle-price {
+      color: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      white-space: nowrap;
+    }
+
+    .field {
+      margin-bottom: 22px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 8px;
+    }
+
+    .custom-select {
+      position: relative;
+      width: 100%;
+    }
+
+    .custom-options {
+      display: block;
+      margin: 0 0 22px;
+      padding: 0;
+      list-style: none;
+      background: #fff;
+      border: 0;
+      max-height: none;
+      overflow: visible;
+    }
+
+    .custom-option {
+      width: 100%;
+      height: 32px;
+      min-height: 32px;
+      margin: 0 0 5px;
+      padding: 0 11px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 18px;
+      font-size: 13px;
+      line-height: 1.2;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .custom-option:last-child {
+      margin-bottom: 0;
+    }
+
+    .custom-option.is-selected {
+      border-color: #111;
+      color: #111;
+    }
+
+    .custom-option:hover {
+      background: #f4f4f4;
+    }
+
+    .custom-option.is-selected:hover {
+      background: #fff;
+    }
+
+    .option-name {
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .option-price {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .decision-message {
+      display: none;
+      margin: auto 0 12px;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #b00020;
+    }
+
+    .decision-message.is-visible {
+      display: block;
+    }
+
+    .button-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      margin-top: 0;
+      gap: 12px;
+    }
+
+    .button {
+      width: 100%;
+      height: 48px;
+      border: 1px solid #b8b8b8;
+      background: #b8b8b8;
+      color: #fff;
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: default;
+    }
+
+    .button-row.is-enabled .button {
+      border-color: #111;
+      background: #111;
+      cursor: pointer;
+    }
+
+    .note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 420px) {
+      .page {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        padding: 28px 18px 48px;
+        align-items: start;
+      }
+
+      .image-panel {
+        min-height: 420px;
+      }
+
+      .details {
+        min-height: auto;
+      }
+
+      .button-row {
+        margin-top: 24px;
+      }
+
+      .product-image {
+        max-width: 86%;
+        max-height: 380px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">LUNVIERO</header>
+
+  <main class="page">
+    <section class="details">
+      <div class="brand">Aurelia Studio</div>
+      <h1>Nilestone Mouse Pad</h1>
+      <div class="subtitle">
+        <span>Premium-Textured Mouse Pad</span>
+        <span class="subtitle-price">$6.5</span>
+      </div>
+
+      <div class="field">
+        <label id="productLabel">Product</label>
+        <div class="custom-select" id="productSelect" aria-labelledby="productLabel">
+          <ul class="custom-options" role="listbox" aria-label="Product options"></ul>
+        </div>
+      </div>
+
+      <div class="decision-message" id="decisionMessage">please click the option before adding it to cart</div>
+
+      <div class="button-row" id="buttonRow">
+        <button class="button" type="button" data-action="add_to_cart" disabled>Add to cart</button>
+        <button class="button" type="button" data-action="leave" disabled>Leave</button>
+      </div>
+
+    </section>
+  
+
+    <section class="image-panel" aria-label="Product image area">
+      <img id="productImage" class="product-image" src="" alt="" decoding="async" loading="eager" />
+    </section>
+
+    </main>
+
+  <script src="products.js"></script>
+  <script>
+    const productSelect = document.getElementById('productSelect');
+    const optionList = productSelect.querySelector('.custom-options');
+    const productImage = document.getElementById('productImage');
+    const buttonRow = document.getElementById('buttonRow');
+    const actionButtons = buttonRow.querySelectorAll('.button');
+    const decisionMessage = document.getElementById('decisionMessage');
+
+    let selectedProductName = '';
+    let selectedProductImage = '';
+    let selectedProductPrice = '';
+    let firstOptionClickTime = '';
+    let pageOpenTime = new Date().toISOString();
+    let buttonsShownTime = pageOpenTime;
+    let buttonsEnabledTime = '';
+    let lastDisplayedImage = '';
+
+    let totalClicks = 0;
+    let optionClicks = 0;
+    let imageSwitches = 0;
+    let addToCartClicks = 0;
+    let leaveClicks = 0;
+    let invalidButtonClicks = 0;
+
+    document.addEventListener('click', () => {
+      totalClicks += 1;
+    }, true);
+
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    function preloadImages() {
+      if (!Array.isArray(window.PRODUCTS)) return;
+
+      const imageSources = window.PRODUCTS.map(product => product.image).filter(Boolean);
+
+      imageSources.forEach((src) => {
+        const img = new Image();
+        img.decoding = 'async';
+        img.loading = 'eager';
+        img.src = src;
+      });
+    }
+
+    function selectOption(option) {
+      optionList.querySelectorAll('.custom-option').forEach((item) => {
+        item.classList.remove('is-selected');
+        item.setAttribute('aria-selected', 'false');
+      });
+
+      option.classList.add('is-selected');
+      option.setAttribute('aria-selected', 'true');
+
+      selectedProductName = option.dataset.name || '';
+      selectedProductImage = option.dataset.image || '';
+      selectedProductPrice = '$6.5';
+      decisionMessage.classList.remove('is-visible');
+
+      productImage.src = option.dataset.image;
+      productImage.alt = option.dataset.name;
+      productImage.classList.add('is-visible');
+      lastDisplayedImage = option.dataset.image || '';
+
+      if (!firstOptionClickTime) {
+        firstOptionClickTime = new Date().toISOString();
+      }
+    }
+
+    function previewOption(option, countSwitch = false) {
+      if (!option || !option.dataset.image) return;
+
+      if (countSwitch && lastDisplayedImage !== option.dataset.image) {
+        imageSwitches += 1;
+      }
+
+      productImage.src = option.dataset.image;
+      productImage.alt = option.dataset.name || '';
+      productImage.classList.add('is-visible');
+      lastDisplayedImage = option.dataset.image;
+    }
+
+    function buildProductOptions() {
+      if (!Array.isArray(window.PRODUCTS)) return;
+
+      const randomizedProducts = shuffleArray(window.PRODUCTS);
+      optionList.innerHTML = '';
+
+      randomizedProducts.forEach((product) => {
+        const option = document.createElement('li');
+        option.className = 'custom-option';
+        option.setAttribute('role', 'option');
+        option.setAttribute('aria-selected', 'false');
+        option.setAttribute('tabindex', '0');
+        option.dataset.name = product.name;
+        option.dataset.image = product.image;
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'option-name';
+        nameSpan.textContent = product.name;
+
+        option.appendChild(nameSpan);
+        optionList.appendChild(option);
+      });
+    }
+
+    optionList.addEventListener('click', (event) => {
+      const option = event.target.closest('.custom-option');
+      if (!option) return;
+
+      optionClicks += 1;
+      selectOption(option);
+    });
+
+    optionList.addEventListener('mouseover', (event) => {
+      const option = event.target.closest('.custom-option');
+      if (!option) return;
+
+      previewOption(option, true);
+    });
+
+    optionList.addEventListener('focusin', (event) => {
+      const option = event.target.closest('.custom-option');
+      if (!option) return;
+
+      previewOption(option);
+    });
+
+    optionList.addEventListener('keydown', (event) => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+
+      const option = event.target.closest('.custom-option');
+      if (!option) return;
+
+      event.preventDefault();
+      optionClicks += 1;
+      selectOption(option);
+    });
+
+    buttonRow.addEventListener('click', (event) => {
+      const button = event.target.closest('.button');
+      if (!button) return;
+
+      const action = button.dataset.action || '';
+      if (action === 'add_to_cart') {
+        addToCartClicks += 1;
+      }
+
+      if (action === 'leave') {
+        leaveClicks += 1;
+      }
+
+      if (action === 'add_to_cart' && !selectedProductName) {
+        invalidButtonClicks += 1;
+        decisionMessage.classList.add('is-visible');
+        return;
+      }
+
+      window.parent.postMessage({
+        type: 'netlify_complete',
+        action: action,
+        choice: selectedProductName,
+        page: window.location.pathname,
+        selectedProduct: selectedProductName,
+        selectedPrice: selectedProductPrice,
+        selectedProductImage: selectedProductImage,
+        productChosen: selectedProductName ? '1' : '0',
+        noBuyOptionChosen: '0',
+        totalClicks: String(totalClicks),
+        optionClicks: String(optionClicks),
+        imageSwitches: String(imageSwitches),
+        addToCartClicks: String(addToCartClicks),
+        leaveClicks: String(leaveClicks),
+        invalidButtonClicks: String(invalidButtonClicks),
+        pageOpenTime: pageOpenTime,
+        firstOptionClickTime: firstOptionClickTime,
+        buttonsShownTime: buttonsShownTime,
+        buttonsEnabledTime: buttonsEnabledTime
+      }, '*');
+    });
+
+    preloadImages();
+    buildProductOptions();
+    window.setTimeout(() => {
+      buttonRow.classList.add('is-enabled');
+      actionButtons.forEach((button) => {
+        button.disabled = false;
+      });
+      buttonsEnabledTime = new Date().toISOString();
+    }, 10000);
+  </script>
+</body>
+</html>
