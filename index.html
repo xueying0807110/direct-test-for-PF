@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -315,6 +315,7 @@
     let buttonsShownTime = pageOpenTime;
     let buttonsEnabledTime = '';
     let lastDisplayedImage = '';
+    let hasHoveredOptionImage = false;
 
     let totalClicks = 0;
     let optionClicks = 0;
@@ -375,6 +376,10 @@
 
     function previewOption(option, countSwitch = false) {
       if (!option || !option.dataset.image) return;
+
+            if (countSwitch) {
+        hasHoveredOptionImage = true;
+      }
 
       if (countSwitch && lastDisplayedImage !== option.dataset.image) {
         imageSwitches += 1;
@@ -458,6 +463,14 @@
 
       if (action === 'add_to_cart' && !selectedProductName) {
         invalidButtonClicks += 1;
+        decisionMessage.textContent = 'please click the option before adding it to cart';
+        decisionMessage.classList.add('is-visible');
+        return;
+      }
+
+      if (action === 'leave' && !hasHoveredOptionImage) {
+        invalidButtonClicks += 1;
+        decisionMessage.textContent = 'please carefully view the options';
         decisionMessage.classList.add('is-visible');
         return;
       }
@@ -497,3 +510,5 @@
   </script>
 </body>
 </html>
+
+
