@@ -190,7 +190,8 @@
     }
 
     .decision-message {
-      display: none;
+      visibility: hidden;
+      height: 18px;
       margin: auto 0 12px;
       padding: 0;
       background: transparent;
@@ -198,10 +199,11 @@
       font-size: 13px;
       line-height: 1.4;
       color: #b00020;
+      overflow: hidden;
     }
 
     .decision-message.is-visible {
-      display: block;
+      visibility: visible;
     }
 
     .button-row {
@@ -307,26 +309,9 @@
     const actionButtons = buttonRow.querySelectorAll('.button');
     const decisionMessage = document.getElementById('decisionMessage');
 
-    let selectedProductName = '';
-    let selectedProductImage = '';
-    let selectedProductPrice = '';
-    let firstOptionClickTime = '';
-    let pageOpenTime = new Date().toISOString();
-    let buttonsShownTime = pageOpenTime;
-    let buttonsEnabledTime = '';
+    let hasClickedOption = false;
+    let hasHoveredOption = false;
     let lastDisplayedImage = '';
-    let hasHoveredOptionImage = false;
-
-    let totalClicks = 0;
-    let optionClicks = 0;
-    let imageSwitches = 0;
-    let addToCartClicks = 0;
-    let leaveClicks = 0;
-    let invalidButtonClicks = 0;
-
-    document.addEventListener('click', () => {
-      totalClicks += 1;
-    }, true);
 
     function shuffleArray(array) {
       const shuffled = [...array];
@@ -350,6 +335,15 @@
       });
     }
 
+    function showWarning(message) {
+      decisionMessage.textContent = message;
+      decisionMessage.classList.add('is-visible');
+    }
+
+    function hideWarning() {
+      decisionMessage.classList.remove('is-visible');
+    }
+
     function selectOption(option) {
       optionList.querySelectorAll('.custom-option').forEach((item) => {
         item.classList.remove('is-selected');
@@ -358,31 +352,21 @@
 
       option.classList.add('is-selected');
       option.setAttribute('aria-selected', 'true');
-
-      selectedProductName = option.dataset.name || '';
-      selectedProductImage = option.dataset.image || '';
-      selectedProductPrice = '$6.5';
-      decisionMessage.classList.remove('is-visible');
+      hasClickedOption = true;
+      hideWarning();
 
       productImage.src = option.dataset.image;
       productImage.alt = option.dataset.name;
       productImage.classList.add('is-visible');
       lastDisplayedImage = option.dataset.image || '';
-
-      if (!firstOptionClickTime) {
-        firstOptionClickTime = new Date().toISOString();
-      }
     }
 
-    function previewOption(option, countSwitch = false) {
+    function previewOption(option, countHover = false) {
       if (!option || !option.dataset.image) return;
 
-            if (countSwitch) {
-        hasHoveredOptionImage = true;
-      }
-
-      if (countSwitch && lastDisplayedImage !== option.dataset.image) {
-        imageSwitches += 1;
+      if (countHover) {
+        hasHoveredOption = true;
+        hideWarning();
       }
 
       productImage.src = option.dataset.image;
@@ -419,7 +403,6 @@
       const option = event.target.closest('.custom-option');
       if (!option) return;
 
-      optionClicks += 1;
       selectOption(option);
     });
 
@@ -444,7 +427,6 @@
       if (!option) return;
 
       event.preventDefault();
-      optionClicks += 1;
       selectOption(option);
     });
 
@@ -453,51 +435,22 @@
       if (!button) return;
 
       const action = button.dataset.action || '';
-      if (action === 'add_to_cart') {
-        addToCartClicks += 1;
-      }
 
-      if (action === 'leave') {
-        leaveClicks += 1;
-      }
-
-      if (action === 'add_to_cart' && !selectedProductName) {
-        invalidButtonClicks += 1;
-        decisionMessage.textContent = 'please click the option before adding it to cart';
-        decisionMessage.classList.add('is-visible');
+      if (action === 'add_to_cart' && !hasClickedOption) {
+        showWarning('please click the option before adding it to cart');
         return;
       }
 
-      if (action === 'leave' && !hasHoveredOptionImage) {
-        invalidButtonClicks += 1;
-        decisionMessage.textContent = 'please carefully view the options';
-        decisionMessage.classList.add('is-visible');
+      if (action === 'leave' && !hasHoveredOption) {
+        showWarning('please carefully view the options');
         return;
       }
 
       window.parent.postMessage({
         type: 'netlify_complete',
-        action: action,
-        choice: selectedProductName,
-        page: window.location.pathname,
-        selectedProduct: selectedProductName,
-        selectedPrice: selectedProductPrice,
-        selectedProductImage: selectedProductImage,
-        productChosen: selectedProductName ? '1' : '0',
-        noBuyOptionChosen: '0',
-        totalClicks: String(totalClicks),
-        optionClicks: String(optionClicks),
-        imageSwitches: String(imageSwitches),
-        addToCartClicks: String(addToCartClicks),
-        leaveClicks: String(leaveClicks),
-        invalidButtonClicks: String(invalidButtonClicks),
-        pageOpenTime: pageOpenTime,
-        firstOptionClickTime: firstOptionClickTime,
-        buttonsShownTime: buttonsShownTime,
-        buttonsEnabledTime: buttonsEnabledTime
+        page: window.location.pathname
       }, '*');
     });
-
     preloadImages();
     buildProductOptions();
     window.setTimeout(() => {
@@ -510,5 +463,14 @@
   </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
 
 
